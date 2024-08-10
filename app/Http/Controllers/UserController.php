@@ -7,7 +7,12 @@ use App\Http\Resources\UserCrudResource;
 use App\Models\User;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+
 
 
 class UserController extends Controller
@@ -52,6 +57,7 @@ class UserController extends Controller
         try {
             DB::transaction(function () use ($request) {
                 $data = $request->validated();
+                $data["email_verified_at"] = Carbon::now();
                 $data["password"] = bcrypt($data["password"]);
                 User::query()->create($data);
             });
@@ -74,7 +80,9 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        //
+        return inertia("User/Edit",[
+            "user" => new UserCrudResource($user),
+        ]);
     }
 
     /**
@@ -82,7 +90,25 @@ class UserController extends Controller
      */
     public function update(UpdateUserRequest $request, User $user)
     {
-        //
+        $name = $user->name ?? "";
+        try {
+            DB::transaction(function () use ($request,$user) {
+                $data = $request->validated();
+                $data["email_verified_at"] = time();
+                $password = $data["password"] ?? null;
+
+                if($password){
+                    $data["password"] = bcrypt($data["password"]);
+                }else{
+                    unset($data["password"]);
+                }
+                $user->update($data);
+            });
+
+            return to_route("user.index")->with("success", "User {$name} Successfully");
+        } catch (\Throwable $th) {
+            return redirect()->back()->with("error", $th->getMessage());
+        }
     }
 
     /**
@@ -90,6 +116,22 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        //
+        if($user->id === Auth::id()) return redirect()->back()->with("error", "Something went wrong!Please try again.");
+        try {
+            $name = $user->name ?? "";
+            $user->delete();
+            return to_route("user.index")->with("success", "User \"$name\" Was Deleted.");
+        } catch (\Throwable $throwable) {
+            if ($throwable instanceof ModelNotFoundException) {
+                Log::error(__CLASS__ . '@' . __FUNCTION__, [
+                    "line" => $throwable->getLine(),
+                    "file" => $throwable->getFile(),
+                    "message" => $throwable->getMessage(),
+                    "trace" => $throwable->getTraceAsString(),
+                ]);
+                return redirect()->back()->with("error", "Something went wrong!Please try again.");
+            }
+            return redirect()->back()->with("error", "Something went wrong!Please try again.");
+        }
     }
 }

@@ -8,6 +8,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class UserCrudResource extends JsonResource
 {
+    public static $wrap = false;
     /**
      * Transform the resource into an array.
      *
@@ -20,8 +21,6 @@ class UserCrudResource extends JsonResource
             "name" => $this->name,
             "email" => $this->email,
             "created_at" => (new Carbon($this->created_at))->format('H:i:s d-m-Y'),
-
-
         ];
     }
 }

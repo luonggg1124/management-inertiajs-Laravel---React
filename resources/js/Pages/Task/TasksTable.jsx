@@ -1,7 +1,12 @@
 import TableHeading from "@/Components/TableHeading.jsx";
 import TextInput from "@/Components/TextInput.jsx";
 import SelectedInput from "@/Components/SelectedInput.jsx";
-import {TASK_STATUS_CLASS_MAP, TASK_STATUS_TEXT_MAP} from "@/constants.jsx";
+import {
+  TASK_PRIORITY_CLASS_MAP,
+  TASK_PRIORITY_TEXT_MAP,
+  TASK_STATUS_CLASS_MAP,
+  TASK_STATUS_TEXT_MAP
+} from "@/constants.jsx";
 import {Link, router} from "@inertiajs/react";
 import Pagination from "@/Components/Pagination.jsx";
 
@@ -64,7 +69,11 @@ export  default function TasksTable({tasks, queryParams = null,hideProjectColumn
                           sortChanged={sortChanged}>
               Status
             </TableHeading>
-
+            <TableHeading className="dark:hover:bg-slate-500 hover:bg-slate-600 cursor-pointer" name="priority"
+                          sort_field={queryParams.sort_field} sort_direction={queryParams.sort_direction}
+                          sortChanged={sortChanged}>
+              Priority
+            </TableHeading>
             <TableHeading className="dark:hover:bg-slate-500 hover:bg-slate-600 cursor-pointer" name="created_at"
                           sort_field={queryParams.sort_field} sort_direction={queryParams.sort_direction}
                           sortChanged={sortChanged}>
@@ -82,6 +91,7 @@ export  default function TasksTable({tasks, queryParams = null,hideProjectColumn
           <tr className="text-nowrap">
             <th className="px-3 py-2"></th>
             <th className="px-3 py-2"></th>
+
             {!hideProjectColumn && (<th className="px-3 py-2"></th>)}
             <th className="px-3 py-2">
               <TextInput className="w-full"
@@ -103,6 +113,18 @@ export  default function TasksTable({tasks, queryParams = null,hideProjectColumn
 
               </SelectedInput>
             </th>
+            <th className="px-3 py-2">
+              <SelectedInput className="w-full"
+                             defaultValue={queryParams.priority}
+                             onChange={(e) => searchFieldChanged('priority', e.target.value)}
+              >
+                <option value="">Select Priority</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+
+              </SelectedInput>
+            </th>
             <th className="px-3 py-2"></th>
             <th className="px-3 py-2"></th>
             <th className="px-3 py-2"></th>
@@ -117,13 +139,20 @@ export  default function TasksTable({tasks, queryParams = null,hideProjectColumn
               <td className="px-3 py-2">
                 <img src={task.image_path} style={{width: 60}} alt=""/>
               </td>
-              {!hideProjectColumn && (<td className="px-3 py-3 ">
-                {task.project.name}
+              {!hideProjectColumn && (<td className="px-3 py-2 ">
+                <Link className="hover:underline" href={route("project.show", task.project.id)}>
+                  {task.project.name}
+                </Link>
               </td>)}
-              <td className="px-3 py-2">{task.name}</td>
+              <th className="px-3 py-2">{task.name}</th>
               <td className="px-3 py-2 ">
                       <span className={"px-2 py-1 rounded text-white " + TASK_STATUS_CLASS_MAP[task.status]}>
                         {TASK_STATUS_TEXT_MAP[task.status]}
+                      </span>
+              </td>
+              <td className="px-3 py-2 ">
+                      <span className={"px-2 py-1 rounded text-white " + TASK_PRIORITY_CLASS_MAP[task.priority]}>
+                        {TASK_PRIORITY_TEXT_MAP[task.priority]}
                       </span>
               </td>
               <td className="px-3 py-2 text-nowrap">{task.created_at}</td>

@@ -10,20 +10,27 @@ class Task extends Model
 {
     use HasFactory;
 
-    public function project():BelongsTo
+    protected $fillable = [
+        "name", "description", "image_path", "status", "priority", "due_date", "assigned_user_id", "project_id", "created_by", "updated_by"
+    ];
+
+    public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
     }
-    public function assignedUser():BelongsTo
+
+    public function assignedUser(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
-    public function createdBy():BelongsTo
+
+    public function createdBy(): BelongsTo
     {
-        return $this->belongsTo(User::class,"created_by");
+        return $this->belongsTo(User::class, "created_by");
     }
-    public function updatedBy():BelongsTo
+
+    public function updatedBy(): BelongsTo
     {
-        return $this->belongsTo(User::class,"updated_by");
+        return $this->belongsTo(User::class, "updated_by");
     }
 }
